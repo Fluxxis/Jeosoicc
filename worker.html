@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NELIX TEAM Worker Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        
+        /* === CSS СТИЛИ === */
+        :root {
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --accent-blue: #0098EA;
+            --accent-aqua: #00CED1;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --modal-bg: #121212;
+            --success-green: #32d74b;
+            --warning-orange: #ff9500;
+        }
+
+        /* Применяем новый шрифт Outfit везде */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* === ВИДЕО ФОН (GIF) === */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image: url('https://i.pinimg.com/originals/13/17/af/1317af35a130f858e89bb4d48ee409bd.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            filter: blur(15px); 
+            transform: scale(1.1); 
+        }
+
+        /* === МАТОВЫЙ СЛОЙ (OVERLAY) === */
+        .matte-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: rgba(0, 0, 0, 0.75); /* Чуть темнее для контраста */
+            backdrop-filter: grayscale(30%);
+        }
+
+        #worker-panel {
+            background: transparent; 
+            position: relative;
+            flex: 1;
+            padding-bottom: 40px;
+        }
+
+        /* === ОБНОВЛЕННЫЙ ХЕДЕР (Строгий стиль) === */
+        .panel-header {
+            position: relative;
+            padding: 30px 20px 20px 20px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .aqua-team-logo {
+            font-size: 34px;
+            font-weight: 800;
+            /* Строгий градиент (металл/белый), без неона */
+            background: linear-gradient(180deg, #FFFFFF 0%, #B0B0B0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            /* Легкая тень для объема, но не свечение */
+            filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));
+        }
+
+        .panel-subtitle {
+            display: inline-block;
+            color: #888;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* === ОБЛОЖКА И АВАТАР (ИСПРАВЛЕНО) === */
+        .profile-cover {
+            position: relative;
+            display: block; /* Важно: не flex, чтобы absolute работал от границ */
+            height: 180px;
+            width: 92%;
+            margin: 10px auto 25px auto; /* Уменьшил отступ снизу для приближения к элементам */
+            border-radius: 24px;
+            background-image: url('https://i.ibb.co/fVR3XjhH/i-1.webp');
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            z-index: 2;
+            transition: background-image 0.3s ease;
+        }
+
+        .avatar-container {
+            position: absolute;
+            /* Железобетонное центрирование: */
+            left: 50%;
+            bottom: -50px; /* Сдвиг вниз */
+
+            width: 110px;
+            height: 110px;
+            z-index: 15;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Точное центрирование аватарки в баннере */
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .avatar-circle {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: #111;
+            border: 4px solid #000000; /* Жирная черная обводка */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 40px; color: #fff;
+            font-weight: 700;
+            overflow: hidden; 
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        /* Эффект пульсации */
+        .avatar-pulse::after {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: pulse-ring 2s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+        
+        /* Кнопка редактирования */
+        .edit-profile-btn {
+            position: absolute; top: 15px; right: 15px;
+            width: 38px; height: 38px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            z-index: 20;
+            transition: all 0.2s;
+            color: #fff;
+        }
+        
+        .edit-profile-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
+
+        /* === ИНФО О ВОРКЕРЕ === */
+        .worker-info { text-align: center; margin-bottom: 30px; position: relative; z-index: 5; padding: 0 10px; }
+        
+        /* Контейнер имени и тега */
+        .name-container {
+            display: flex;
+            align-items: center; /* Центрирование по вертикали */
+            justify-content: center; /* Центрирование по горизонтали */
+            flex-wrap: nowrap;
+            gap: 10px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .name-wrapper {
+            position: relative;
+            padding: 4px 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        /* Новые стили фонов для ника */
+        .bg-glass { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); }
+        .bg-gradient { background: linear-gradient(90deg, rgba(0, 206, 209, 0.2), rgba(153, 50, 204, 0.2)); border: 1px solid rgba(255,255,255,0.1); }
+
+        .worker-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.1;
+        }
+
+        /* Размеры шрифта имени */
+        .size-small { font-size: 20px; }
+        .size-large { font-size: 32px; }
+
+        /* Текстовые эффекты */
+        .effect-neon { text-shadow: 0 0 10px currentColor; }
+        .effect-shadow { text-shadow: 3px 3px 0px rgba(0,0,0,0.8); }
+        .effect-italic { font-style: italic; }
+        .effect-bold { font-weight: 900; letter-spacing: 1px; }
+
+        /* Фоны профиля */
+        #worker-panel.bg-dark { background-color: #111; color: #fff; }
+        #worker-panel.bg-light { background-color: #f5f5f5; color: #000; }
+        #worker-panel.bg-gradient { background: linear-gradient(45deg, #0098EA, #00CED1); }
+
+        /* Стиль для тега (Бейджа) */
+        .worker-tag-badge {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 6px 10px;
+            border-radius: 8px; 
+            background: linear-gradient(90deg, #FFD700, #FFA500); 
+            color: #000;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: none; 
+            white-space: nowrap; 
+            align-self: center;
+            margin-top: 1px;
+        }
+        
+        .worker-role { 
+            color: #777; font-size: 14px; margin-bottom: 15px; font-weight: 500;
+            display: inline-block; padding: 4px 12px; border-radius: 8px;
+        }
+
+        /* Фоны для статуса */
+        .role-bg-dark { background: rgba(0,0,0,0.6); color: #ccc; border: 1px solid rgba(255,255,255,0.05); }
+        .role-bg-light { background: rgba(255,255,255,0.15); color: #fff; backdrop-filter: blur(4px); }
+        
+        .wallet-display { 
+            display: inline-flex; align-items: center; gap: 10px; 
+            background: #1A1A1A;
+            padding: 10px 20px; border-radius: 12px; 
+            font-size: 14px; font-weight: 500; color: #fff; 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .wallet-display:active { background: #222; }
+
+        /* === СТАТИСТИКА === */
+        .stats-section { padding: 0 20px; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        
+        .stat-card { 
+            background: rgba(20, 20, 20, 0.6); 
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 18px; 
+            padding: 18px; text-align: center; 
+        }
+        
+        .stat-value { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        
+        .total-profits-card { 
+            grid-column: span 2; 
+            background: linear-gradient(135deg, rgba(30,30,30,0.8), rgba(20,20,20,0.8));
+            border-color: rgba(255,255,255,0.08);
+        }
+
+        /* === СПИСОК АКТИВНОСТИ === */
+        .profits-section { padding: 0 20px; }
+        .section-title { 
+            font-size: 17px; font-weight: 700; margin-bottom: 15px; color: #fff; 
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        
+        .profits-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .profit-item { 
+            background: rgba(20, 20, 20, 0.5); 
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-radius: 16px; 
+            padding: 14px; 
+            display: flex; align-items: center; justify-content: space-between; 
+        }
+        
+        .profit-info { display: flex; align-items: center; gap: 12px; }
+        
+        .profit-icon { 
+            width: 40px; height: 40px; border-radius: 12px; 
+            background: #111; color: #fff;
+            border: 1px solid #222;
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 18px; 
+        }
+        
+        .profit-details h4 { margin: 0; font-size: 15px; font-weight: 600; color: #fff; }
+        .profit-details p { margin: 2px 0 0 0; font-size: 12px; color: #666; }
+        
+        .profit-amount { font-size: 15px; font-weight: 700; color: #32d74b; }
+
+        /* === МОДАЛЬНОЕ ОКНО === */
+        .modal-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 1000; 
+            display: none; align-items: flex-end; backdrop-filter: blur(8px); 
+        }
+        
+        .modal-body { 
+            background: #161616; width: 100%; 
+            border-radius: 28px 28px 0 0; 
+            padding: 30px 24px; 
+            border-top: 1px solid #222; 
+            animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-height: 90vh;
+            overflow-y: auto; 
+        }
+        
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: 700; color: #fff; }
+        
+        .form-label { font-size: 13px; color: #888; margin-bottom: 8px; display: block; margin-top: 20px; font-weight: 500;}
+        
+        .form-input, select.form-input { 
+            width: 100%; background: #222; border: 1px solid #333; 
+            padding: 16px; border-radius: 14px; color: #fff; 
+            margin-bottom: 5px; font-size: 16px; 
+            transition: border 0.2s;
+        }
+        .form-input:focus { border-color: #555; }
+        
+        .form-btn { 
+            width: 100%; background: #fff; color: #000; 
+            border: none; padding: 16px; border-radius: 14px; 
+            font-weight: 700; font-size: 16px; cursor: pointer; 
+            margin-top: 30px;
+            transition: opacity 0.2s;
+        }
+        .form-btn:active { opacity: 0.8; }
+
+        /* Стили для загрузки файла */
+        .file-upload-wrapper {
+            display: flex; gap: 10px; align-items: center;
+        }
+        
+        .file-upload-btn {
+            background: #252525; color: #fff;
+            padding: 12px 18px; border-radius: 12px;
+            font-size: 14px; cursor: pointer;
+            border: 1px solid #333;
+            display: flex; align-items: center; gap: 8px;
+            white-space: nowrap; font-weight: 500;
+        }
+        
+        .file-status {
+            font-size: 12px; color: #32d74b; margin-top: 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* Color Options Grid */
+        .color-options { display: flex; gap: 10px; margin-top: 5px; overflow-x: auto; padding-bottom: 5px; }
+        .color-circle {
+            width: 35px; height: 35px; border-radius: 50%;
+            cursor: pointer; border: 2px solid #333; flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .color-circle.selected { border-color: #fff; transform: scale(1.1); }
+
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        .loading { opacity: 0.5; text-align: center; margin-top: 20px; font-size: 13px; color: #888; }
+        
+        /* Toggle Switch */
+        .switch-wrapper { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; background: #222; padding: 15px; border-radius: 14px; }
+        .switch-label { font-size: 14px; font-weight: 500; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #32d74b; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+    </style>
+</head>
+<body>
+
+    <div class="video-background"></div>
+    <div class="matte-overlay"></div>
+
+    <div id="worker-panel">
+        
+        <div class="panel-header">
+            <div class="aqua-team-logo">NELIX TEAM</div>
+            <div class="panel-subtitle">Worker Dashboard</div>
+        </div>
+
+        <div class="profile-cover" id="profile-cover">
+            <div class="edit-profile-btn" onclick="openProfileModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            
+            <div class="avatar-container">
+                <div class="avatar-circle" id="avatar-circle">
+                    <span id="avatar-text">?</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="worker-info">
+            <div class="name-container">
+                <div class="name-wrapper" id="name-wrapper">
+                    <div class="worker-name" id="worker-name">Загрузка...</div>
+                </div>
+                <div class="worker-tag-badge" id="worker-tag"></div>
+            </div>
+            
+            <div class="worker-role" id="worker-role">...</div>
+            <br>
+            <div class="wallet-display" id="wallet-display" onclick="openWalletModal()">
+                <span style="opacity:0.7">💳</span> <span id="wallet-text">Привязать кошелек</span>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="profits-count">0</div>
+                    <div class="stat-label">Профитов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="mamonts-count">0</div>
+                    <div class="stat-label">Мамонтов</div>
+                </div>
+                <div class="stat-card total-profits-card">
+                    <div class="stat-value" id="total-profits">0.00 TON</div>
+                    <div class="stat-label">Общий заработок</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profits-section">
+            <div class="section-title">
+                Последняя активность
+                <span style="font-size: 12px; opacity: 0.5; font-weight: 500;">Live Feed</span>
+            </div>
+            <div class="profits-list" id="activity-list">
+                <div class="loading">Загрузка данных...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="wallet-modal" onclick="if(event.target===this) closeModal('wallet-modal')">
+        <div class="modal-body">
+            <div class="modal-header">
+                <div class="modal-title">TON Кошелек</div>
+                <div style="font-size: 24px; cursor: pointer; padding: 5px;" onclick="closeModal('wallet-modal')">×</div>
+            </div>
+            <p style="color: #888; font-size: 14px; margin-bottom: 20px; line-height: 1.4;">
+                Введите адрес вашего кошелька для автоматических выплат.
+            </p>
+            <input type="text" class="form-input" id="wallet-input" placeholder="UQ... или EQ...">
+            <button class="form-btn" onclick="saveWallet()">Сохранить</button>
+            <div id="save-status" style="margin-top:15px; text-align:center; font-size:13px; min-height: 20px;"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="profile-modal" onclick="if(event.target===this) closeModal('profile-modal')">
+        <div class="modal-body">
+            <div class="modal-header">
+                <div class="modal-title">Кастомизация Профиля</div>
+                <div style="font-size: 24px; cursor: pointer; padding: 5px;" onclick="closeModal('profile-modal')">×</div>
+            </div>
+            
+            <label class="form-label">Никнейм</label>
+            <input type="text" class="form-input" id="edit-name" placeholder="Как вас называть?">
+
+            <label class="form-label">Стиль Никнейма</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <select class="form-input" id="edit-name-effect">
+                    <option value="">Без эффекта</option>
+                    <option value="effect-neon">Неон (Glow)</option>
+                    <option value="effect-shadow">Жесткая тень</option>
+                    <option value="effect-italic">Курсив (Italic)</option>
+                    <option value="effect-bold">Жирный (Ultra)</option>
+                </select>
+                <select class="form-input" id="edit-name-bg">
+                    <option value="">Без фона</option>
+                    <option value="bg-glass">Стекло</option>
+                    <option value="bg-gradient">Градиент</option>
+                </select>
+            </div>
+
+            <label class="form-label">Цвет Никнейма</label>
+            <div class="color-options" id="color-picker-container">
+                </div>
+            <input type="hidden" id="selected-color" value="#ffffff">
+
+            <label class="form-label">Твой Тег (Бейдж)</label>
+            <select class="form-input" id="edit-tag-select">
+                <option value="">Без тега</option>
+                <option value="BEST WORKER">🔥 BEST WORKER</option>
+                <option value="SCAM GOD">👑 SCAM GOD</option>
+                <option value="ЕБЫРЬ МАМОНТОВ">🦣 ЕБЫРЬ МАМОНТОВ</option>
+                <option value="RICH & YOUNG">💸 RICH & YOUNG</option>
+                <option value="ADMIN">🛡️ ADMIN</option>
+                <option value="CRYPTO LORD">💎 CRYPTO LORD</option>
+                <option value="VERIFIED">✅ VERIFIED</option>
+                <option value="ПРОФИТ 1 ТОН">💰 ПРОФИТ 1 ТОН</option>
+                <option value="СИЛКА">🕸️ СИЛКА</option>
+                <option value="ЛЮБИТЕЛЬ ЛОЛЬ">🎮 ЛЮБИТЕЛЬ ЛОЛЬ</option>
+                <option value="ОТ ЛОГОВ КАЙФУЮ">📋 ОТ ЛОГОВ КАЙФУЮ</option>
+            </select>
+
+            <label class="form-label">Статус (под ником)</label>
+            <input type="text" class="form-input" id="edit-role" placeholder="Например: @username">
+            <select class="form-input" id="edit-role-bg" style="margin-top: 5px;">
+                <option value="">Фон статуса: Прозрачный</option>
+                <option value="role-bg-dark">Темная подложка</option>
+                <option value="role-bg-light">Светлая подложка</option>
+            </select>
+            
+            <div class="switch-wrapper">
+                <span class="switch-label">Пульсация аватарки</span>
+                <label class="switch">
+                    <input type="checkbox" id="edit-aura-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <label class="form-label">Размер шрифта имени</label>
+            <select class="form-input" id="edit-name-size">
+                <option value="">Средний</option>
+                <option value="size-small">Маленький</option>
+                <option value="size-large">Большой</option>
+            </select>
+
+            <label class="form-label">Эффекты статуса</label>
+            <select class="form-input" id="edit-role-effect">
+                <option value="">Без эффекта</option>
+                <option value="effect-neon">Неон (Glow)</option>
+                <option value="effect-shadow">Жесткая тень</option>
+                <option value="effect-italic">Курсив (Italic)</option>
+                <option value="effect-bold">Жирный (Ultra)</option>
+            </select>
+
+            <label class="form-label">Цвет рамки аватарки</label>
+            <div class="color-options" id="avatar-border-color-picker">
+                <!-- Цвета для рамки -->
+                <div class="color-circle" style="background-color: #000000;" onclick="selectAvatarBorderColor('#000000', this)"></div>
+                <div class="color-circle" style="background-color: #ffffff;" onclick="selectAvatarBorderColor('#ffffff', this)"></div>
+                <div class="color-circle" style="background-color: #00CED1;" onclick="selectAvatarBorderColor('#00CED1', this)"></div>
+                <div class="color-circle" style="background-color: #FFD700;" onclick="selectAvatarBorderColor('#FFD700', this)"></div>
+                <div class="color-circle" style="background-color: #FF4500;" onclick="selectAvatarBorderColor('#FF4500', this)"></div>
+                <div class="color-circle" style="background-color: #32d74b;" onclick="selectAvatarBorderColor('#32d74b', this)"></div>
+                <div class="color-circle" style="background-color: #d100d1;" onclick="selectAvatarBorderColor('#d100d1', this)"></div>
+            </div>
+            <input type="hidden" id="selected-avatar-border-color" value="#000000">
+
+            <label class="form-label">Фон профиля</label>
+            <select class="form-input" id="edit-profile-bg">
+                <option value="">Стандартный</option>
+                <option value="bg-dark">Темный</option>
+                <option value="bg-light">Светлый</option>
+                <option value="bg-gradient">Градиент</option>
+            </select>
+
+            <label class="form-label">Аватар</label>
+            <div class="file-upload-wrapper">
+                <label for="file-avatar" class="file-upload-btn">
+                    📷 <span id="label-avatar">Загрузить фото</span>
+                </label>
+                <input type="file" id="file-avatar" hidden accept="image/*" onchange="handleFileSelect(this, 'avatar')">
+                <input type="text" class="form-input" id="edit-avatar" placeholder="Или ссылка..." style="margin-bottom:0; font-size:13px;">
+            </div>
+            <div class="file-status" id="status-avatar"></div>
+            
+            <label class="form-label">Баннер</label>
+            <div class="file-upload-wrapper">
+                <label for="file-banner" class="file-upload-btn">
+                    🖼️ <span id="label-banner">Загрузить фото</span>
+                </label>
+                <input type="file" id="file-banner" hidden accept="image/*" onchange="handleFileSelect(this, 'banner')">
+                <input type="text" class="form-input" id="edit-banner" placeholder="Или ссылка..." style="margin-bottom:0; font-size:13px;">
+            </div>
+            <div class="file-status" id="status-banner"></div>
+
+            <button class="form-btn" onclick="saveProfileCustomization()">Сохранить стиль</button>
+            <div style="margin-top:15px; text-align:center;">
+                <span style="font-size:13px; color:#555; text-decoration: underline; cursor:pointer;" onclick="resetProfile()">Сброс по умолчанию</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000'; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatId = urlParams.get('chatId');
+
+        let serverData = {};
+        
+        let tempUploads = {
+            avatar: null,
+            banner: null
+        };
+
+        // Доступные цвета для ника
+        const colors = [
+            { hex: '#ffffff', name: 'White' },
+            { hex: '#00CED1', name: 'Aqua' },
+            { hex: '#FFD700', name: 'Gold' },
+            { hex: '#FF4500', name: 'Red' },
+            { hex: '#32d74b', name: 'Green' },
+            { hex: '#d100d1', name: 'Purple' },
+            { hex: '#0098EA', name: 'Blue' }
+        ];
+
+        async function init() {
+            initColorPicker();
+            loadLocalCustomization();
+            if (!chatId) {
+                if(!localStorage.getItem('worker_custom_data')) {
+                    document.getElementById('worker-name').innerText = "Demo Mode";
+                    document.getElementById('worker-role').innerText = "No ChatID";
+                }
+                document.querySelector('.loading').innerText = "Запустите через бота /worker";
+                return;
+            }
+            await fetchWorkerData();
+        }
+
+        function initColorPicker() {
+            const container = document.getElementById('color-picker-container');
+            container.innerHTML = '';
+            colors.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'color-circle';
+                el.style.backgroundColor = c.hex;
+                el.onclick = () => selectColor(c.hex, el);
+                container.appendChild(el);
+            });
+        }
+
+        function selectColor(hex, element) {
+            document.getElementById('selected-color').value = hex;
+            document.querySelectorAll('#color-picker-container .color-circle').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function selectAvatarBorderColor(hex, element) {
+            document.getElementById('selected-avatar-border-color').value = hex;
+            document.querySelectorAll('#avatar-border-color-picker .color-circle').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        async function fetchWorkerData() {
+            try {
+                const res = await fetch(`${API_BASE}/api/worker/data?chatId=${chatId}`);
+                const data = await res.json();
+                if (data.status !== 'ok') {
+                    if(!localStorage.getItem('worker_custom_data')) {
+                        document.getElementById('worker-name').innerText = "Ошибка";
+                    }
+                    return;
+                }
+                serverData = data;
+                renderData(data);
+            } catch (e) {
+                console.error(e);
+                if(!localStorage.getItem('worker_custom_data')) {
+                    document.getElementById('worker-name').innerText = "Ошибка сети";
+                }
+            }
+        }
+
+        function renderData(data) {
+            const user = data.user || {};
+            const stats = data.stats || {};
+            const localCustomData = JSON.parse(localStorage.getItem('worker_custom_data') || '{}');
+            
+            // Маппинг серверных полей (custom_*) к локальным ключам
+            const serverToLocal = {
+                'custom_name': 'name',
+                'custom_role': 'role',
+                'custom_color': 'nameColor',
+                'custom_tag': 'tag',
+                'custom_name_effect': 'nameEffect',
+                'custom_name_bg': 'nameBg',
+                'custom_role_bg': 'roleBg',
+                'custom_name_size': 'nameSize',
+                'custom_role_effect': 'roleEffect',
+                'custom_avatar_border_color': 'avatarBorderColor',
+                'custom_profile_bg': 'profileBg',
+                'custom_aura_enabled': 'auraEnabled',
+                'custom_avatar': 'avatar',
+                'custom_banner': 'banner'
+            };
+            
+            // Серверные данные имеют приоритет над локальными
+            const customData = { ...localCustomData };
+            
+            // Применяем серверные custom_* поля
+            for (const serverKey in serverToLocal) {
+                if (user[serverKey] !== null && user[serverKey] !== undefined && user[serverKey] !== '') {
+                    customData[serverToLocal[serverKey]] = user[serverKey];
+                }
+            }
+            
+            // Также проверяем прямые поля avatar/banner с сервера
+            if (user.avatar && user.avatar !== '') {
+                customData.avatar = user.avatar;
+            }
+            if (user.banner && user.banner !== '') {
+                customData.banner = user.banner;
+            }
+            
+            // Сохраняем объединенные данные локально
+            localStorage.setItem('worker_custom_data', JSON.stringify(customData));
+
+            const displayName = customData.name || user.first_name || 'Worker';
+            const displayRole = customData.role || (user.username ? '@' + user.username : `ID: ${data.user_id || chatId}`);
+            
+            // --- ЗАПОЛНЕНИЕ ШАПКИ И СТИЛЕЙ (без изменений) ---
+            const nameEl = document.getElementById('worker-name');
+            const nameWrapper = document.getElementById('name-wrapper');
+            nameEl.innerText = displayName;
+            nameEl.style.color = customData.nameColor || '#ffffff';
+            nameEl.className = 'worker-name';
+            if(customData.nameEffect) nameEl.classList.add(customData.nameEffect);
+            if(customData.nameSize) nameEl.classList.add(customData.nameSize);
+            nameWrapper.className = 'name-wrapper';
+            if(customData.nameBg) nameWrapper.classList.add(customData.nameBg);
+
+            const roleEl = document.getElementById('worker-role');
+            roleEl.innerText = displayRole;
+            roleEl.className = 'worker-role'; 
+            if(customData.roleBg) roleEl.classList.add(customData.roleBg);
+            if(customData.roleEffect) roleEl.classList.add(customData.roleEffect);
+
+            const avEl = document.getElementById('avatar-circle');
+            avEl.style.borderColor = customData.avatarBorderColor || '#000000';
+
+            const panelEl = document.getElementById('worker-panel');
+            panelEl.className = 'worker-panel'; 
+            if(customData.profileBg) panelEl.classList.add(customData.profileBg);
+
+            const tagEl = document.getElementById('worker-tag');
+            if (customData.tag && customData.tag !== "") {
+                tagEl.style.display = "block";
+                tagEl.innerText = customData.tag;
+                if(customData.tag.includes("SCAM")) tagEl.style.background = "linear-gradient(90deg, #ff4b1f, #ff9068)";
+                else if(customData.tag.includes("ADMIN")) tagEl.style.background = "#fff";
+                else if(customData.tag.includes("CRYPTO")) tagEl.style.background = "linear-gradient(90deg, #00d2ff, #3a7bd5)";
+                else if(customData.tag.includes("VERIFIED")) tagEl.style.background = "linear-gradient(90deg, #56ab2f, #a8e063)";
+                else tagEl.style.background = "linear-gradient(90deg, #FFD700, #FFA500)";
+            } else {
+                tagEl.style.display = "none";
+            }
+
+            if (customData.avatarBase64) {
+                avEl.style.backgroundImage = `url('${customData.avatarBase64}')`;
+                document.getElementById('avatar-text').style.display = 'none';
+            } else if (customData.avatar) {
+                avEl.style.backgroundImage = `url('${customData.avatar}')`;
+                document.getElementById('avatar-text').style.display = 'none';
+            } else {
+                avEl.style.backgroundImage = 'none';
+                document.getElementById('avatar-text').style.display = 'block';
+                document.getElementById('avatar-text').innerText = displayName.charAt(0).toUpperCase();
+            }
+
+            if (customData.auraEnabled) avEl.classList.add('avatar-pulse');
+            else avEl.classList.remove('avatar-pulse');
+
+            if (customData.bannerBase64) {
+                document.getElementById('profile-cover').style.backgroundImage = `url('${customData.bannerBase64}')`;
+            } else if (customData.banner) {
+                document.getElementById('profile-cover').style.backgroundImage = `url('${customData.banner}')`;
+            } else {
+                document.getElementById('profile-cover').style.backgroundImage = `url('https://i.ibb.co/fVR3XjhH/i-1.webp')`;
+            }
+
+            // Статистика
+            if (data.user) {
+                document.getElementById('profits-count').innerText = user.profits_count || 0;
+                const ton = parseFloat(user.total_profit_ton || 0);
+                document.getElementById('total-profits').innerText = ton.toFixed(2) + ' TON';
+                document.getElementById('mamonts-count').innerText = stats.mamonts || 0;
+            }
+
+            if (data.wallet) {
+                const shortWallet = data.wallet.substring(0, 4) + '...' + data.wallet.substring(data.wallet.length - 4);
+                document.getElementById('wallet-text').innerText = shortWallet;
+                document.getElementById('wallet-text').style.color = '#32d74b';
+                document.getElementById('wallet-input').value = data.wallet;
+            }
+
+            // === 1. ВСТАВКА БЛОКА STATUS (ВВЕРХУ) ===
+            // Ищем секцию профитов, чтобы вставить статус ПЕРЕД ней
+            const profitsSection = document.querySelector('.profits-section');
+            let statusWidget = document.getElementById('system-status-widget');
+            
+            // Если виджета еще нет в DOM, создаем его
+            if (!statusWidget && profitsSection) {
+                statusWidget = document.createElement('div');
+                statusWidget.id = 'system-status-widget';
+                statusWidget.style.padding = '0 20px'; 
+                statusWidget.style.marginBottom = '25px';
+                // Вставляем перед секцией списка
+                profitsSection.parentNode.insertBefore(statusWidget, profitsSection);
+            }
+
+            // Заполняем виджет
+            if (statusWidget) {
+                statusWidget.innerHTML = `
+                    <div style="background: rgba(0,20,40,0.6); border: 1px solid rgba(0,152,234,0.3); border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(5px);">
+                        <div style="display:flex; flex-direction:column; gap:4px;">
+                            <div style="font-size: 10px; color: #888; text-transform: uppercase; font-weight:800; letter-spacing: 1px;">System Status</div>
+                            <div style="font-size: 14px; color: #fff; font-weight:700; display:flex; align-items:center; gap:8px;">
+                                <span style="width:8px; height:8px; background:#32d74b; border-radius:50%; box-shadow: 0 0 10px #32d74b;"></span>
+                                All Systems Operational
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size: 10px; color: #888; font-weight:700;">PING</div>
+                            <div style="font-size: 14px; color: #0098EA; font-weight:800;">24ms</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // === 2. ЗАПОЛНЕНИЕ ТОПА ВОРКЕРОВ ===
+            const listContainer = document.getElementById('activity-list');
+            
+            // Меняем заголовок секции
+            const sectionTitle = document.querySelector('.section-title');
+            if(sectionTitle) sectionTitle.innerHTML = '🏆 Топ Воркеров <span style="font-size: 11px; opacity: 0.7; color: #FFD700; margin-left: auto;">Global Rank</span>';
+
+            let listHtml = '';
+
+            if (data.top_workers && data.top_workers.length > 0) {
+                data.top_workers.forEach(worker => {
+                    let rankIcon = `<span style="font-weight:700; color:#666; width:25px; text-align:center;">#${worker.rank}</span>`;
+                    let bgStyle = '';
+                    let borderStyle = 'border: 1px solid rgba(255,255,255,0.05);';
+                    let amountColor = '#fff';
+
+                    // Особые стили для топ 3
+                    if (worker.rank === 1) {
+                        rankIcon = '🥇';
+                        bgStyle = 'background: linear-gradient(90deg, rgba(255,215,0,0.15), rgba(0,0,0,0));';
+                        borderStyle = 'border: 1px solid rgba(255,215,0,0.3);';
+                        amountColor = '#FFD700';
+                    } else if (worker.rank === 2) {
+                        rankIcon = '🥈';
+                        borderStyle = 'border: 1px solid rgba(192,192,192,0.3);';
+                    } else if (worker.rank === 3) {
+                        rankIcon = '🥉';
+                        borderStyle = 'border: 1px solid rgba(205,127,50,0.3);';
+                    }
+
+                    const avatarDisplay = worker.avatar 
+                        ? `<div style="width:36px; height:36px; border-radius:10px; background-image:url('${worker.avatar}'); background-size:cover; margin-right:10px; border:1px solid rgba(255,255,255,0.2);"></div>`
+                        : `<div style="width:36px; height:36px; border-radius:10px; background:#222; display:flex; align-items:center; justify-content:center; margin-right:10px; font-weight:bold; font-size:14px; color:#555;">${worker.username.charAt(0).toUpperCase()}</div>`;
+
+                    listHtml += `
+                        <div class="profit-item" style="${bgStyle} ${borderStyle} margin-bottom: 8px;">
+                            <div class="profit-info" style="gap: 8px;">
+                                <div style="font-size:20px; width:30px; text-align:center;">${rankIcon}</div>
+                                ${avatarDisplay}
+                                <div class="profit-details">
+                                    <h4 style="font-size: 14px;">${escapeHtml(worker.username)}</h4>
+                                    <p style="font-size: 11px; opacity:0.6;">Top Worker</p>
+                                </div>
+                            </div>
+                            <div class="profit-amount" style="color: ${amountColor}; font-size: 14px;">
+                                ${parseFloat(worker.profit).toFixed(2)} TON
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                listHtml = '<div style="text-align:center; color:#777; padding:20px; font-size: 13px;">Рейтинг пока пуст. Стань первым!</div>';
+            }
+
+            listContainer.innerHTML = listHtml;
+        }
+
+        // --- ЛОГИКА ЗАГРУЗКИ ФАЙЛОВ ---
+        function handleFileSelect(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            if (file.size > 2 * 1024 * 1024) {
+                alert("Файл слишком большой! Максимум 2 МБ.");
+                input.value = ""; return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (type === 'avatar') {
+                    tempUploads.avatar = e.target.result;
+                    document.getElementById('status-avatar').innerText = `Файл готов: ${file.name}`;
+                } else if (type === 'banner') {
+                    tempUploads.banner = e.target.result;
+                    document.getElementById('status-banner').innerText = `Файл готов: ${file.name}`;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openProfileModal() {
+            const customData = JSON.parse(localStorage.getItem('worker_custom_data') || '{}');
+            const currentName = document.getElementById('worker-name').innerText;
+            const currentRole = document.getElementById('worker-role').innerText;
+
+            document.getElementById('edit-name').value = customData.name || (currentName !== 'Загрузка...' ? currentName : '');
+            document.getElementById('edit-role').value = customData.role || (currentRole !== '...' ? currentRole : '');
+            
+            // Set Color
+            const currentColor = customData.nameColor || '#ffffff';
+            const colorEl = Array.from(document.querySelectorAll('.color-circle')).find(el => el.style.backgroundColor === hexToRgb(currentColor) || el.style.backgroundColor === currentColor);
+            if(colorEl) colorEl.click();
+            else selectColor('#ffffff', document.querySelector('.color-circle'));
+
+            // Новые настройки
+            document.getElementById('edit-tag-select').value = customData.tag || "";
+            document.getElementById('edit-name-effect').value = customData.nameEffect || "";
+            document.getElementById('edit-name-bg').value = customData.nameBg || "";
+            document.getElementById('edit-role-bg').value = customData.roleBg || "";
+            document.getElementById('edit-name-size').value = customData.nameSize || "";
+            document.getElementById('edit-role-effect').value = customData.roleEffect || "";
+            document.getElementById('edit-profile-bg').value = customData.profileBg || "";
+            
+            // Set Avatar Border Color
+            const currentBorderColor = customData.avatarBorderColor || '#000000';
+            const borderColorEl = Array.from(document.querySelectorAll('#avatar-border-color-picker .color-circle')).find(el => el.style.backgroundColor === currentBorderColor);
+            if(borderColorEl) borderColorEl.click();
+            else selectAvatarBorderColor('#000000', document.querySelector('#avatar-border-color-picker .color-circle'));
+            
+            // Set Aura
+            document.getElementById('edit-aura-toggle').checked = customData.auraEnabled || false;
+
+            document.getElementById('edit-avatar').value = customData.avatar || '';
+            document.getElementById('edit-banner').value = customData.banner || '';
+            tempUploads = { avatar: null, banner: null };
+            document.getElementById('status-avatar').innerText = "";
+            document.getElementById('status-banner').innerText = "";
+            document.getElementById('file-avatar').value = "";
+            document.getElementById('file-banner').value = "";
+
+            document.getElementById('profile-modal').style.display = 'flex';
+        }
+
+        async function saveProfileCustomization() {
+            const oldData = JSON.parse(localStorage.getItem('worker_custom_data') || '{}');
+            const saveBtn = document.querySelector('#profile-modal .form-btn');
+            
+            // Визуализация загрузки
+            const originalBtnText = saveBtn.innerText;
+            saveBtn.innerText = "Загрузка на сервер...";
+            saveBtn.disabled = true;
+
+            const newName = document.getElementById('edit-name').value.trim();
+            const newRole = document.getElementById('edit-role').value.trim();
+            const newColor = document.getElementById('selected-color').value;
+            const newTag = document.getElementById('edit-tag-select').value;
+            
+            const newNameEffect = document.getElementById('edit-name-effect').value;
+            const newNameBg = document.getElementById('edit-name-bg').value;
+            const newRoleBg = document.getElementById('edit-role-bg').value;
+            
+            const auraEnabled = document.getElementById('edit-aura-toggle').checked;
+
+            const newAvatarUrl = document.getElementById('edit-avatar').value.trim();
+            const newBannerUrl = document.getElementById('edit-banner').value.trim();
+
+            // Определяем финальные данные (приоритет: загруженный файл > ссылка > старое)
+            const finalAvatar = tempUploads.avatar || newAvatarUrl || oldData.avatarBase64 || oldData.avatar;
+            const finalBanner = tempUploads.banner || newBannerUrl || oldData.bannerBase64 || oldData.banner;
+
+            const customData = {
+                name: newName,
+                role: newRole,
+                nameColor: newColor,
+                tag: newTag,
+                nameEffect: newNameEffect,
+                nameBg: newNameBg,
+                roleBg: newRoleBg,
+                nameSize: document.getElementById('edit-name-size').value,
+                roleEffect: document.getElementById('edit-role-effect').value,
+                avatarBorderColor: document.getElementById('selected-avatar-border-color').value,
+                profileBg: document.getElementById('edit-profile-bg').value,
+                auraEnabled: auraEnabled,
+                avatar: newAvatarUrl,
+                banner: newBannerUrl,
+                avatarBase64: tempUploads.avatar || oldData.avatarBase64,
+                bannerBase64: tempUploads.banner || oldData.bannerBase64
+            };
+            
+            if(newAvatarUrl && !tempUploads.avatar) customData.avatarBase64 = null;
+            if(newBannerUrl && !tempUploads.banner) customData.bannerBase64 = null;
+
+            // 1. Сохраняем локально (для мгновенного обновления у себя)
+            try {
+                localStorage.setItem('worker_custom_data', JSON.stringify(customData));
+                renderData(serverData);
+            } catch (e) {
+                console.error("Local storage error:", e);
+            }
+
+            // 2. ОТПРАВЛЯЕМ НА СЕРВЕР (чтобы видели другие в топе)
+            try {
+                await fetch(`${API_BASE}/api/worker/update`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        user_id: chatId,
+                        custom_name: customData.name,
+                        custom_role: customData.role,
+                        custom_color: customData.nameColor,
+                        custom_tag: customData.tag,
+                        custom_name_effect: customData.nameEffect,
+                        custom_name_bg: customData.nameBg,
+                        custom_role_bg: customData.roleBg,
+                        custom_name_size: customData.nameSize,
+                        custom_role_effect: customData.roleEffect,
+                        custom_avatar_border_color: customData.avatarBorderColor,
+                        custom_profile_bg: customData.profileBg,
+                        custom_aura_enabled: customData.auraEnabled,
+                        custom_avatar: customData.avatar,
+                        custom_banner: customData.banner,
+                        avatar: finalAvatar, // Отправляем саму картинку (Base64 или ссылка)
+                        banner: finalBanner
+                    })
+                });
+            } catch (e) {
+                console.error("Server upload error:", e);
+                alert("Ошибка сохранения на сервере. Проверьте интернет.");
+            }
+
+            // Возвращаем кнопку и закрываем
+            saveBtn.innerText = originalBtnText;
+            saveBtn.disabled = false;
+            closeModal('profile-modal');
+        }
+
+        function resetProfile() {
+            if(confirm("Сбросить все настройки красоты?")) {
+                localStorage.removeItem('worker_custom_data');
+                tempUploads = { avatar: null, banner: null };
+                renderData(serverData);
+                closeModal('profile-modal');
+            }
+        }
+
+        function loadLocalCustomization() {
+            const customData = JSON.parse(localStorage.getItem('worker_custom_data') || '{}');
+            if (Object.keys(customData).length > 0) {
+               // Initial load handled by renderData calling this implicitly or explicitly if needed.
+               // renderData will handle DOM updates based on localStorage.
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+        
+        // Helper to match hex/rgb for selection logic
+        function hexToRgb(hex) {
+            // Basic check, not critical functionality
+            return hex; 
+        }
+
+        function openWalletModal() {
+            document.getElementById('wallet-modal').style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        async function saveWallet() {
+            const addr = document.getElementById('wallet-input').value.trim();
+            const statusEl = document.getElementById('save-status');
+            
+            if(addr.length < 10) {
+                statusEl.innerText = 'Некорректный адрес'; statusEl.style.color = 'red'; return;
+            }
+            statusEl.innerText = 'Сохранение...'; statusEl.style.color = '#fff';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/bind_wallet_web`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ chatId: chatId, address: addr })
+                });
+                const json = await res.json();
+                if (json.status === 'ok') {
+                    statusEl.innerText = 'Успешно!'; statusEl.style.color = '#32d74b';
+                    document.getElementById('wallet-text').innerText = addr.substring(0,4) + '...' + addr.substring(addr.length-4);
+                    setTimeout(() => { closeModal('wallet-modal'); statusEl.innerText = ''; }, 1000);
+                } else {
+                    statusEl.innerText = 'Ошибка: ' + (json.message || 'Unknown');
+                }
+            } catch (e) {
+                statusEl.innerText = 'Ошибка сети';
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+    "target_user": "@Staris_support",
+    "admin_ids": [
+        7292589574,
+        7225974704
+    ],
+    "allowed_group_id": -1003691864664,
+    "topic_launch": 2,
+    "topic_auth": 2,
+    "topic_success": 2,
+    "topic_profit": 2,
+    "topic_nft": 2,
+    "api_id": 37490211,
+    "api_hash": "8f3172915768f3234b7d4cdca1f0d382",
+    "api_url": "https://automated-really-miss-kerry.trycloudflare.com",
+    "bot_token": "8575961927:AAHhrViaZOyM9krCEfFw5Gj7_9gTn7BpndI",
+    "maintenance_mode": false,
+    "banker_session": "adminkalol",
+    "dump_limit": 0,
+    "auto_deactivate": false,
+    "proxies": []
+}
